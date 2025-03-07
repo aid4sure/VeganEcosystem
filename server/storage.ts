@@ -103,7 +103,7 @@ export class MemStorage implements IStorage {
 
   async getReservations(restaurantId: number, date: Date): Promise<Reservation[]> {
     return Array.from(this.reservations.values()).filter(
-      (reservation) => 
+      (reservation) =>
         reservation.restaurantId === restaurantId &&
         reservation.date.toDateString() === date.toDateString()
     );
@@ -181,11 +181,11 @@ export class MemStorage implements IStorage {
       {
         name: "Green Earth Kitchen",
         description: "Farm-to-table vegan cuisine with sustainable practices",
-        address: "123 Eco Street, Green City",
+        address: "DLF Cyber City, Sector 24, Gurugram, Haryana 122002",
         hours: "Mon-Sun: 11:00-22:00",
         imageUrl: "https://images.unsplash.com/photo-1494331789569-f98601f1934f",
-        latitude: 40.7128,
-        longitude: -74.006,
+        latitude: 28.4957,
+        longitude: 77.0909,
         sustainabilityInfo: "Solar powered, zero-waste policy, composting program",
         menu: "Quinoa Buddha Bowl, Beyond Burger, Garden Fresh Salad",
         type: "Restaurant",
@@ -195,11 +195,11 @@ export class MemStorage implements IStorage {
       {
         name: "Plant Power Cart",
         description: "Mobile vegan street food with global flavors",
-        address: "456 Food Cart Way, Green City",
+        address: "Galleria Market, DLF Phase 4, Gurugram, Haryana 122009",
         hours: "Mon-Sat: 12:00-20:00",
         imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
-        latitude: 40.7129,
-        longitude: -74.007,
+        latitude: 28.4689,
+        longitude: 77.0583,
         sustainabilityInfo: "100% compostable packaging, local ingredients",
         menu: "Jackfruit Tacos, Tempeh Bowl, Sweet Potato Fries",
         type: "Food Cart",
