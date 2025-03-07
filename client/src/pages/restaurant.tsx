@@ -3,6 +3,7 @@ import { useParams } from "wouter";
 import { Restaurant, Review } from "@shared/schema";
 import MapView from "@/components/map-view";
 import ReviewForm from "@/components/review-form";
+import ReservationForm from "@/components/reservation-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Leaf, MapPin, UtensilsCrossed } from "lucide-react";
 import { format } from "date-fns";
@@ -70,6 +71,15 @@ export default function RestaurantPage() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Menu Highlights</h2>
             <p className="text-gray-600">{restaurant.menu}</p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Make a Reservation</h2>
+            <ReservationForm 
+              restaurantId={restaurant.id}
+              maxPartySize={restaurant.maxPartySize}
+              timeSlotInterval={restaurant.timeSlotInterval}
+            />
           </div>
         </div>
 

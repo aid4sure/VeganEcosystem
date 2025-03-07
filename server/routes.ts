@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertRestaurantSchema, insertReviewSchema } from "@shared/schema";
+import { insertRestaurantSchema, insertReviewSchema, insertReservationSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { z } from "zod";
 
@@ -68,6 +68,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid review data", errors: error.errors });
+      }
+      throw error;
+    }
+  });
+
+  // Create reservation
+  app.post("/api/reservations", async (req, res) => {
+    try {
+      const reservationData = insertReservationSchema.parse(req.body);
+      const reservation = await storage.createReservation(reservationData);
+      res.status(201).json(reservation);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid reservation data", errors: error.errors });
+      }
+      throw error;
+    }
+  });
+
+  // Get reservations for a restaurant on a specific date
+  app.get("/api/restaurants/:id/reservations/:date", async (req, res) => {
+    const restaurantId = parseInt(req.params.id);
+    const date = new Date(req.params.date);
+
+    if (isNaN(restaurantId)) {
+      return res.status(400).json({ message: "Invalid restaurant ID" });
+    }
+
+    if (isNaN(date.getTime())) {
+      return res.status(400).json({ message: "Invalid date" });
+    }
+
+    const reservations = await storage.getReservations(restaurantId, date);
+    res.json(reservations);
+  });
+
+  // Cancel reservation
+  app.post("/api/reservations/:id/cancel", async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid reservation ID" });
+    }
+
+    try {
+      const reservation = await storage.cancelReservation(id);
+      res.json(reservation);
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(404).json({ message: error.message });
       }
       throw error;
     }

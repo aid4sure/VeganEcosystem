@@ -14,6 +14,8 @@ export const restaurants = pgTable("restaurants", {
   sustainabilityInfo: text("sustainability_info").notNull(),
   menu: text("menu").notNull(),
   type: text("type").notNull(),
+  maxPartySize: integer("max_party_size").notNull().default(10),
+  timeSlotInterval: integer("time_slot_interval").notNull().default(30), // minutes
 });
 
 export const reviews = pgTable("reviews", {
@@ -21,6 +23,18 @@ export const reviews = pgTable("reviews", {
   restaurantId: integer("restaurant_id").notNull(),
   rating: integer("rating").notNull(),
   comment: text("comment").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const reservations = pgTable("reservations", {
+  id: serial("id").primaryKey(),
+  restaurantId: integer("restaurant_id").notNull(),
+  date: timestamp("date").notNull(),
+  partySize: integer("party_size").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  status: text("status").notNull().default("confirmed"), // confirmed, cancelled, completed
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -36,11 +50,14 @@ export const giftCards = pgTable("gift_cards", {
 
 export const insertRestaurantSchema = createInsertSchema(restaurants).omit({ id: true });
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
+export const insertReservationSchema = createInsertSchema(reservations).omit({ id: true, createdAt: true, status: true });
 export const insertGiftCardSchema = createInsertSchema(giftCards).omit({ id: true, createdAt: true });
 
 export type Restaurant = typeof restaurants.$inferSelect;
 export type InsertRestaurant = z.infer<typeof insertRestaurantSchema>;
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Reservation = typeof reservations.$inferSelect;
+export type InsertReservation = z.infer<typeof insertReservationSchema>;
 export type GiftCard = typeof giftCards.$inferSelect;
 export type InsertGiftCard = z.infer<typeof insertGiftCardSchema>;

@@ -1,4 +1,4 @@
-import { Restaurant, InsertRestaurant, Review, InsertReview, GiftCard, InsertGiftCard } from "@shared/schema";
+import { Restaurant, InsertRestaurant, Review, InsertReview, GiftCard, InsertGiftCard, Reservation, InsertReservation } from "@shared/schema";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -12,6 +12,12 @@ export interface IStorage {
   getReviews(restaurantId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
 
+  // Reservation operations
+  createReservation(reservation: InsertReservation): Promise<Reservation>;
+  getReservations(restaurantId: number, date: Date): Promise<Reservation[]>;
+  getReservation(id: number): Promise<Reservation | undefined>;
+  cancelReservation(id: number): Promise<Reservation>;
+
   // Gift card operations
   createGiftCard(amount: number): Promise<GiftCard>;
   getGiftCard(code: string): Promise<GiftCard | undefined>;
@@ -22,17 +28,21 @@ export class MemStorage implements IStorage {
   private restaurants: Map<number, Restaurant>;
   private reviews: Map<number, Review>;
   private giftCards: Map<string, GiftCard>;
+  private reservations: Map<number, Reservation>;
   private currentRestaurantId: number;
   private currentReviewId: number;
   private currentGiftCardId: number;
+  private currentReservationId: number;
 
   constructor() {
     this.restaurants = new Map();
     this.reviews = new Map();
     this.giftCards = new Map();
+    this.reservations = new Map();
     this.currentRestaurantId = 1;
     this.currentReviewId = 1;
     this.currentGiftCardId = 1;
+    this.currentReservationId = 1;
 
     // Add initial sample data
     this.initializeSampleData();
@@ -77,6 +87,44 @@ export class MemStorage implements IStorage {
     };
     this.reviews.set(id, review);
     return review;
+  }
+
+  async createReservation(insertReservation: InsertReservation): Promise<Reservation> {
+    const id = this.currentReservationId++;
+    const reservation: Reservation = {
+      ...insertReservation,
+      id,
+      status: "confirmed",
+      createdAt: new Date(),
+    };
+    this.reservations.set(id, reservation);
+    return reservation;
+  }
+
+  async getReservations(restaurantId: number, date: Date): Promise<Reservation[]> {
+    return Array.from(this.reservations.values()).filter(
+      (reservation) => 
+        reservation.restaurantId === restaurantId &&
+        reservation.date.toDateString() === date.toDateString()
+    );
+  }
+
+  async getReservation(id: number): Promise<Reservation | undefined> {
+    return this.reservations.get(id);
+  }
+
+  async cancelReservation(id: number): Promise<Reservation> {
+    const reservation = this.reservations.get(id);
+    if (!reservation) {
+      throw new Error("Reservation not found");
+    }
+
+    const updatedReservation: Reservation = {
+      ...reservation,
+      status: "cancelled"
+    };
+    this.reservations.set(id, updatedReservation);
+    return updatedReservation;
   }
 
   async createGiftCard(amount: number): Promise<GiftCard> {
@@ -140,7 +188,9 @@ export class MemStorage implements IStorage {
         longitude: -74.006,
         sustainabilityInfo: "Solar powered, zero-waste policy, composting program",
         menu: "Quinoa Buddha Bowl, Beyond Burger, Garden Fresh Salad",
-        type: "Restaurant"
+        type: "Restaurant",
+        maxPartySize: 8,
+        timeSlotInterval: 30
       },
       {
         name: "Plant Power Cart",
@@ -152,7 +202,9 @@ export class MemStorage implements IStorage {
         longitude: -74.007,
         sustainabilityInfo: "100% compostable packaging, local ingredients",
         menu: "Jackfruit Tacos, Tempeh Bowl, Sweet Potato Fries",
-        type: "Food Cart"
+        type: "Food Cart",
+        maxPartySize: 4,
+        timeSlotInterval: 15
       }
     ];
 
