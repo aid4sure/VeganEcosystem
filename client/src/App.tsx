@@ -9,6 +9,7 @@ import Learn from "@/pages/learn";
 import GiftCards from "@/pages/gift-cards";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
+import RestaurantForm from "@/pages/admin/restaurant-form";
 import SiteHeader from "@/components/site-header";
 
 function Router() {
@@ -23,6 +24,10 @@ function Router() {
           <Route path="/gift-cards" component={GiftCards} />
           <Route path="/admin" component={AdminLogin} />
           <Route path="/admin/dashboard" component={AdminDashboard} />
+          <Route path="/admin/restaurants/new" component={RestaurantForm} />
+          <Route path="/admin/restaurants/:id/edit">
+            {(params) => <RestaurantForm initialData={undefined} />}
+          </Route>
           <Route component={NotFound} />
         </Switch>
       </main>
