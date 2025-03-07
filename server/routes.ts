@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertRestaurantSchema, insertReviewSchema } from "@shared/schema";
 import { ZodError } from "zod";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all restaurants
@@ -67,6 +68,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid review data", errors: error.errors });
+      }
+      throw error;
+    }
+  });
+
+  // Create gift card
+  app.post("/api/gift-cards", async (req, res) => {
+    try {
+      const schema = z.object({
+        amount: z.number().min(10).max(1000)
+      });
+
+      const { amount } = schema.parse(req.body);
+      const giftCard = await storage.createGiftCard(amount);
+      res.status(201).json(giftCard);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid amount", errors: error.errors });
+      }
+      throw error;
+    }
+  });
+
+  // Get gift card
+  app.get("/api/gift-cards/:code", async (req, res) => {
+    const code = req.params.code;
+    const giftCard = await storage.getGiftCard(code);
+
+    if (!giftCard) {
+      return res.status(404).json({ message: "Gift card not found" });
+    }
+
+    res.json(giftCard);
+  });
+
+  // Use gift card
+  app.post("/api/gift-cards/:code/redeem", async (req, res) => {
+    try {
+      const schema = z.object({
+        amount: z.number().min(0)
+      });
+
+      const { amount } = schema.parse(req.body);
+      const code = req.params.code;
+
+      const giftCard = await storage.useGiftCard(code, amount);
+      res.json(giftCard);
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
       }
       throw error;
     }

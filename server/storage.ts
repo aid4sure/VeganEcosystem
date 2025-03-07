@@ -1,4 +1,5 @@
-import { Restaurant, InsertRestaurant, Review, InsertReview } from "@shared/schema";
+import { Restaurant, InsertRestaurant, Review, InsertReview, GiftCard, InsertGiftCard } from "@shared/schema";
+import { nanoid } from "nanoid";
 
 export interface IStorage {
   // Restaurant operations
@@ -6,24 +7,33 @@ export interface IStorage {
   getRestaurant(id: number): Promise<Restaurant | undefined>;
   searchRestaurants(query: string): Promise<Restaurant[]>;
   createRestaurant(restaurant: InsertRestaurant): Promise<Restaurant>;
-  
+
   // Review operations
   getReviews(restaurantId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
+
+  // Gift card operations
+  createGiftCard(amount: number): Promise<GiftCard>;
+  getGiftCard(code: string): Promise<GiftCard | undefined>;
+  useGiftCard(code: string, amount: number): Promise<GiftCard>;
 }
 
 export class MemStorage implements IStorage {
   private restaurants: Map<number, Restaurant>;
   private reviews: Map<number, Review>;
+  private giftCards: Map<string, GiftCard>;
   private currentRestaurantId: number;
   private currentReviewId: number;
+  private currentGiftCardId: number;
 
   constructor() {
     this.restaurants = new Map();
     this.reviews = new Map();
+    this.giftCards = new Map();
     this.currentRestaurantId = 1;
     this.currentReviewId = 1;
-    
+    this.currentGiftCardId = 1;
+
     // Add initial sample data
     this.initializeSampleData();
   }
@@ -67,6 +77,55 @@ export class MemStorage implements IStorage {
     };
     this.reviews.set(id, review);
     return review;
+  }
+
+  async createGiftCard(amount: number): Promise<GiftCard> {
+    const id = this.currentGiftCardId++;
+    const code = nanoid(10).toUpperCase();
+    const expiresAt = new Date();
+    expiresAt.setFullYear(expiresAt.getFullYear() + 1); // Valid for 1 year
+
+    const giftCard: GiftCard = {
+      id,
+      code,
+      amount,
+      balance: amount,
+      createdAt: new Date(),
+      expiresAt,
+      isActive: 1
+    };
+
+    this.giftCards.set(code, giftCard);
+    return giftCard;
+  }
+
+  async getGiftCard(code: string): Promise<GiftCard | undefined> {
+    return this.giftCards.get(code);
+  }
+
+  async useGiftCard(code: string, amount: number): Promise<GiftCard> {
+    const giftCard = this.giftCards.get(code);
+    if (!giftCard) {
+      throw new Error("Gift card not found");
+    }
+    if (!giftCard.isActive) {
+      throw new Error("Gift card is inactive");
+    }
+    if (giftCard.expiresAt < new Date()) {
+      throw new Error("Gift card has expired");
+    }
+    if (giftCard.balance < amount) {
+      throw new Error("Insufficient balance");
+    }
+
+    const updatedGiftCard: GiftCard = {
+      ...giftCard,
+      balance: giftCard.balance - amount,
+      isActive: giftCard.balance - amount === 0 ? 0 : 1
+    };
+
+    this.giftCards.set(code, updatedGiftCard);
+    return updatedGiftCard;
   }
 
   private initializeSampleData() {

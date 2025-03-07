@@ -20,6 +20,11 @@ export default function SiteHeader() {
               </Link>
             </li>
             <li>
+              <Link href="/gift-cards">
+                <a className="text-gray-600 hover:text-primary">Gift Cards</a>
+              </Link>
+            </li>
+            <li>
               <Link href="/learn">
                 <a className="text-gray-600 hover:text-primary">Learn</a>
               </Link>
