@@ -7,6 +7,8 @@ import Home from "@/pages/home";
 import Restaurant from "@/pages/restaurant";
 import Learn from "@/pages/learn";
 import GiftCards from "@/pages/gift-cards";
+import AdminLogin from "@/pages/admin/login";
+import AdminDashboard from "@/pages/admin/dashboard";
 import SiteHeader from "@/components/site-header";
 
 function Router() {
@@ -19,6 +21,8 @@ function Router() {
           <Route path="/restaurant/:id" component={Restaurant} />
           <Route path="/learn" component={Learn} />
           <Route path="/gift-cards" component={GiftCards} />
+          <Route path="/admin" component={AdminLogin} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>

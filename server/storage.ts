@@ -1,6 +1,13 @@
 import { Restaurant, InsertRestaurant, Review, InsertReview, GiftCard, InsertGiftCard, Reservation, InsertReservation } from "@shared/schema";
 import { nanoid } from "nanoid";
 
+interface Admin {
+    id: number;
+    username: string;
+    passwordHash: string;
+    createdAt: Date;
+}
+
 export interface IStorage {
   // Restaurant operations
   getRestaurants(): Promise<Restaurant[]>;
@@ -22,6 +29,12 @@ export interface IStorage {
   createGiftCard(amount: number): Promise<GiftCard>;
   getGiftCard(code: string): Promise<GiftCard | undefined>;
   useGiftCard(code: string, amount: number): Promise<GiftCard>;
+
+  // Admin operations
+  loginAdmin(username: string, password: string): Promise<string | null>;
+  verifyAdminSession(token: string | undefined): Promise<boolean>;
+  deleteRestaurant(id: number): Promise<void>;
+  updateRestaurant(id: number, restaurant: InsertRestaurant): Promise<Restaurant>;
 }
 
 export class MemStorage implements IStorage {
@@ -33,6 +46,8 @@ export class MemStorage implements IStorage {
   private currentReviewId: number;
   private currentGiftCardId: number;
   private currentReservationId: number;
+  private admins: Map<string, Admin>;
+  private adminSessions: Map<string, string>;
 
   constructor() {
     this.restaurants = new Map();
@@ -43,6 +58,16 @@ export class MemStorage implements IStorage {
     this.currentReviewId = 1;
     this.currentGiftCardId = 1;
     this.currentReservationId = 1;
+    this.admins = new Map();
+    this.adminSessions = new Map();
+
+    // Add a default admin for testing
+    this.admins.set("admin", {
+      id: 1,
+      username: "admin",
+      passwordHash: "admin123", // In production, use proper password hashing
+      createdAt: new Date(),
+    });
 
     // Add initial sample data
     this.initializeSampleData();
@@ -174,6 +199,38 @@ export class MemStorage implements IStorage {
 
     this.giftCards.set(code, updatedGiftCard);
     return updatedGiftCard;
+  }
+
+  async loginAdmin(username: string, password: string): Promise<string | null> {
+    const admin = this.admins.get(username);
+    if (!admin || admin.passwordHash !== password) {
+      return null;
+    }
+
+    const token = nanoid();
+    this.adminSessions.set(token, username);
+    return token;
+  }
+
+  async verifyAdminSession(token: string | undefined): Promise<boolean> {
+    if (!token) return false;
+    return this.adminSessions.has(token);
+  }
+
+  async deleteRestaurant(id: number): Promise<void> {
+    if (!this.restaurants.has(id)) {
+      throw new Error("Restaurant not found");
+    }
+    this.restaurants.delete(id);
+  }
+
+  async updateRestaurant(id: number, restaurant: InsertRestaurant): Promise<Restaurant> {
+    if (!this.restaurants.has(id)) {
+      throw new Error("Restaurant not found");
+    }
+    const updatedRestaurant = { ...restaurant, id };
+    this.restaurants.set(id, updatedRestaurant);
+    return updatedRestaurant;
   }
 
   private initializeSampleData() {

@@ -2,6 +2,13 @@ import { pgTable, text, serial, integer, timestamp, real } from "drizzle-orm/pg-
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const admins = pgTable("admins", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const restaurants = pgTable("restaurants", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -52,6 +59,7 @@ export const insertRestaurantSchema = createInsertSchema(restaurants).omit({ id:
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
 export const insertReservationSchema = createInsertSchema(reservations).omit({ id: true, createdAt: true, status: true });
 export const insertGiftCardSchema = createInsertSchema(giftCards).omit({ id: true, createdAt: true });
+export const insertAdminSchema = createInsertSchema(admins).omit({ id: true, createdAt: true });
 
 export type Restaurant = typeof restaurants.$inferSelect;
 export type InsertRestaurant = z.infer<typeof insertRestaurantSchema>;
@@ -61,3 +69,5 @@ export type Reservation = typeof reservations.$inferSelect;
 export type InsertReservation = z.infer<typeof insertReservationSchema>;
 export type GiftCard = typeof giftCards.$inferSelect;
 export type InsertGiftCard = z.infer<typeof insertGiftCardSchema>;
+export type Admin = typeof admins.$inferSelect;
+export type InsertAdmin = z.infer<typeof insertAdminSchema>;

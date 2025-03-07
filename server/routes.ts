@@ -1,11 +1,68 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertRestaurantSchema, insertReviewSchema, insertReservationSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { z } from "zod";
 
+// Admin middleware
+async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  const isAdmin = await storage.verifyAdminSession(req.headers.authorization);
+  if (!isAdmin) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  next();
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Admin login
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const token = await storage.loginAdmin(username, password);
+      if (!token) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      res.json({ token });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Admin: Delete restaurant
+  app.delete("/api/restaurants/:id", requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid restaurant ID" });
+    }
+
+    try {
+      await storage.deleteRestaurant(id);
+      res.json({ message: "Restaurant deleted" });
+    } catch (error) {
+      res.status(404).json({ message: "Restaurant not found" });
+    }
+  });
+
+  // Admin: Update restaurant
+  app.patch("/api/restaurants/:id", requireAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid restaurant ID" });
+    }
+
+    try {
+      const restaurantData = insertRestaurantSchema.parse(req.body);
+      const restaurant = await storage.updateRestaurant(id, restaurantData);
+      res.json(restaurant);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid restaurant data", errors: error.errors });
+      }
+      res.status(404).json({ message: "Restaurant not found" });
+    }
+  });
+
   // Get all restaurants
   app.get("/api/restaurants", async (_req, res) => {
     const restaurants = await storage.getRestaurants();
