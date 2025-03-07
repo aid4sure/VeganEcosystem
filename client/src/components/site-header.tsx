@@ -8,10 +8,10 @@ export default function SiteHeader() {
         <Link href="/">
           <a className="flex items-center gap-2 text-primary hover:text-primary/90">
             <Leaf className="h-6 w-6" />
-            <span className="font-semibold text-lg">VeganEats</span>
+            <span className="font-semibold text-lg">Listed Vegan</span>
           </a>
         </Link>
-        
+
         <nav>
           <ul className="flex gap-6">
             <li>
