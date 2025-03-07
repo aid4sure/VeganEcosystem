@@ -205,6 +205,20 @@ export class MemStorage implements IStorage {
         type: "Food Cart",
         maxPartySize: 4,
         timeSlotInterval: 15
+      },
+      {
+        name: "Mindful Bites",
+        description: "Contemporary vegan cafe with a focus on healthy eating",
+        address: "Golf Course Road, Sector 53, Gurugram, Haryana 122003",
+        hours: "Mon-Sun: 09:00-21:00",
+        imageUrl: "https://images.unsplash.com/photo-1490818387583-1baba5e638af",
+        latitude: 28.4372,
+        longitude: 77.1042,
+        sustainabilityInfo: "Organic produce, plastic-free packaging, rainwater harvesting",
+        menu: "Smoothie Bowls, Avocado Toast, Mushroom Risotto",
+        type: "Cafe",
+        maxPartySize: 6,
+        timeSlotInterval: 30
       }
     ];
 
