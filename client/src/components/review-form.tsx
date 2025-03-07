@@ -43,14 +43,22 @@ export default function ReviewForm({ restaurantId }: ReviewFormProps) {
     setIsSubmitting(true);
 
     try {
-      await apiRequest("POST", "/api/reviews", values);
+      await apiRequest("POST", "/api/reviews", {
+        ...values,
+        restaurantId // Ensure restaurantId is included
+      });
+
       queryClient.invalidateQueries({ queryKey: [`/api/restaurants/${restaurantId}/reviews`] });
 
       toast({
         description: "Review submitted successfully!",
       });
 
-      form.reset();
+      form.reset({
+        restaurantId,
+        rating: 0,
+        comment: ""
+      });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -77,7 +85,7 @@ export default function ReviewForm({ restaurantId }: ReviewFormProps) {
                 >
                   <Star
                     className={`h-6 w-6 ${
-                      value <= form.watch("rating")
+                      value <= (form.watch("rating") || 0)
                         ? "fill-yellow-400 text-yellow-400"
                         : "text-gray-300 hover:text-yellow-200"
                     }`}
@@ -112,7 +120,7 @@ export default function ReviewForm({ restaurantId }: ReviewFormProps) {
           <Button 
             type="submit" 
             className="w-full"
-            disabled={isSubmitting || !form.formState.isValid}
+            disabled={isSubmitting}
           >
             {isSubmitting ? "Submitting..." : "Submit Review"}
           </Button>

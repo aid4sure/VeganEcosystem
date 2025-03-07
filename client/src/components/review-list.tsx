@@ -51,6 +51,16 @@ export default function ReviewList({ reviews }: ReviewListProps) {
     return dist;
   }, [reviews]);
 
+  if (reviews.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6 text-center text-muted-foreground">
+          No reviews yet. Be the first to share your experience!
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -129,7 +139,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                   {format(new Date(review.createdAt), "MMM d, yyyy")}
                 </span>
               </div>
-              <p className="text-gray-600 mb-2">{review.comment}</p>
+              <p className="text-gray-600">{review.comment}</p>
             </CardContent>
           </Card>
         ))}
