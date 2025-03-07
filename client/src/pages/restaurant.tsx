@@ -6,6 +6,7 @@ import ReviewForm from "@/components/review-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Leaf, MapPin, UtensilsCrossed } from "lucide-react";
 import { format } from "date-fns";
+import ReviewList from "@/components/review-list";
 
 export default function RestaurantPage() {
   const { id } = useParams<{ id: string }>();
@@ -76,10 +77,10 @@ export default function RestaurantPage() {
           <MapView restaurant={restaurant} />
 
           <div>
-            <h2 className="text-xl font-semibold mb-4">Reviews</h2>
-            <div className="space-y-4">
-              <ReviewForm restaurantId={restaurant.id} />
+            <h2 className="text-xl font-semibold mb-6">Write a Review</h2>
+            <ReviewForm restaurantId={restaurant.id} />
 
+            <div className="mt-8">
               {isLoadingReviews ? (
                 <div className="space-y-4">
                   {[...Array(3)].map((_, i) => (
@@ -87,23 +88,7 @@ export default function RestaurantPage() {
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {reviews?.map((review) => (
-                    <Card key={review.id}>
-                      <CardContent className="pt-6">
-                        <div className="flex gap-1 mb-2">
-                          {[...Array(review.rating)].map((_, i) => (
-                            <span key={i} className="text-yellow-400">★</span>
-                          ))}
-                        </div>
-                        <p className="text-gray-600 mb-2">{review.comment}</p>
-                        <span className="text-sm text-gray-400">
-                          {format(new Date(review.createdAt), "MMM d, yyyy")}
-                        </span>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                <ReviewList reviews={reviews || []} />
               )}
             </div>
           </div>
